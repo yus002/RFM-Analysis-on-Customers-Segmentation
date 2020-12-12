@@ -1,0 +1,248 @@
+---
+title: "final assignment 1"
+author: "Yue Sun"
+date: "2020/12/4"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readxl)
+df <- read_excel("C:/Users/Yue Sun/Desktop/msca/fall 2020/msca 31015 consulting/final project/Final Assignment - Week 9.xlsx")
+View(df)
+```
+
+```{r}
+# drop columns
+df = df[, -c(2,67:69)]
+```
+# 1. Perform descriptive statistics on all variables to help understand the data, the distributions and basic info you have to work with on this challenge. (Mean, Standard Deviation, Median, Min, Max and Histogram)
+```{r}
+NROW(df$id)
+# there are 33713 customers
+summary(df)
+# find the outlier and remove the rows
+View(df)
+```
+
+```{r}
+for (i in 2:65){
+  plot(density(unlist(df[,i])), main = sprintf("x = %s", xlab = names(df[,i])), xlab = names(df[,i]))
+}
+
+```
+
+```{r}
+for (i in 2:65){
+  hist(unlist(df[,i]), main = sprintf("x = %s", xlab = names(df[,i])), xlab = names(df[,i]))
+}
+
+
+```
+## 2. Create a new data set with more descriptive labels and the data needed for analysis
+```{r}
+View(df)
+names(df)[names(df) == "r"] = "Recency"
+names(df)[names(df) == "f"] = "Frequency"
+names(df)[names(df) == "m"] = "Monetary Value"
+names(df)[names(df) == "tof"] = "Time Of Flight"
+which(is.na(df))
+df$average.payment = df$`Monetary Value`/df$Frequency
+df[is.na(df)] = 0
+summary(df$average.payment)
+
+#for (i in 1:30){
+#  df[,66 + i ] = df[,i+35] / df[, i +5]
+#  names(df)[66 + i] = paste(names(df)[i + 35], "/", names(df[i + 5]))
+#}
+df[is.na(df)] = 0
+new.df = df[, c(1:5, 66, 6:65)]
+new.df = new.df[-which(new.df[,6] > 1600), ]
+#head(new.df)
+View(new.df)
+```
+
+
+```{r}
+write.csv(new.df, 'cleanned dataset average payment.csv')
+
+```
+
+```{r}
+View(new.df)
+Fsort = apply(new.df[,7:36], 2, sum)
+Msort = apply(new.df[,37:66], 2, sum)
+#View(Fsort)
+#View(Msort)
+head(sort(Fsort, decreasing = TRUE)) 
+head(sort(Msort, decreasing = TRUE)) 
+FM = cbind(sort(Fsort, decreasing = TRUE) , sort(Msort, decreasing = TRUE) )
+View(FM)
+names(new.df)
+```
+
+```{r}
+df = new.df
+View(df)
+
+# r median
+df.test = df[(df$Recency <= 1632.7596) & (df$Recency >= 693.5915), 2]
+median(df.test$Recency)
+df.test = df[(df$Recency <= 693.5915) & (df$Recency >= 280.1592), 2]
+median(df.test$Recency)
+df.test = df[(df$Recency <= 280.1592) & (df$Recency >= 192.3353), 2]
+median(df.test$Recency)
+df.test = df[(df$Recency <= 192.3353) & (df$Recency >= 161.1333), 2]
+median(df.test$Recency)
+df.test = df[(df$Recency <= 161.1333) & (df$Recency >= 160.2685), 2]
+median(df.test$Recency)
+View(df.test)
+```
+```{r}
+                 # r median
+# 1163.17   1     1069
+# 486.8753    2    432
+# 236.2472     3   233
+# 176.7343    4     179
+# 160.7009    5     161
+# < 160.7009   6    < 161
+df$Recency.score[df$Recency >= 1069] = 1
+df$Recency.score[df$Recency >= 432 & df$Recency < 1069] = 2
+df$Recency.score[df$Recency >= 233 & df$Recency < 432] = 3
+df$Recency.score[df$Recency >= 179 & df$Recency < 233] = 4
+df$Recency.score[df$Recency >= 161 & df$Recency < 179] = 5 
+df$Recency.score[df$Recency < 161] = 6
+# f median
+df.test = df[(df$Frequency <= 42.388889) & (df$Frequency >= 23.652603), 3]
+median(df.test$Frequency)
+df.test = df[(df$Frequency <= 23.652603) & (df$Frequency >= 10.406760), 3]
+median(df.test$Frequency)
+df.test = df[(df$Frequency <= 10.406760) & (df$Frequency >= 3.208774), 3]
+median(df.test$Frequency)
+df.test = df[(df$Frequency <= 3.208774) & (df$Frequency >= 2.523883), 3]
+median(df.test$Frequency)
+df.test = df[(df$Frequency <= 2.523883), 3]
+View(df.test)
+median(df.test$Frequency)
+
+# Frequency mean/ median :
+# 2.430464       1
+# 2.866329       3
+# 6.807767      6
+# 17.02968       14
+# 33.02075       28
+df$Frequncy.score[df$Frequency >= 33.02075] = 6
+df$Frequncy.score[df$Frequency >= 17.02968 & df$Frequency < 33.02075] = 5
+df$Frequncy.score[df$Frequency >= 6.807767 & df$Frequency < 17.02968] = 4
+df$Frequncy.score[df$Frequency >= 2.866329 & df$Frequency < 6.807767] = 3
+df$Frequncy.score[df$Frequency >= 2.430464 & df$Frequency < 2.866329] = 2
+df$Frequncy.score[df$Frequency < 2.430464] = 1
+
+# m median
+df.test = df[(df$`Monetary Value` <= 2953.79475) & (df$`Monetary Value` >= 938.05044), 4]
+median(df.test$`Monetary Value`)
+df.test = df[(df$`Monetary Value` <= 938.05044) & (df$`Monetary Value` >= 362.47937), 4]
+median(df.test$`Monetary Value`)
+df.test = df[(df$`Monetary Value` <= 362.47937) & (df$`Monetary Value` >= 98.03783), 4]
+median(df.test$`Monetary Value`)
+df.test = df[(df$`Monetary Value` <= 98.03783) & (df$`Monetary Value` >= 96.26073), 4]
+median(df.test$`Monetary Value`)
+df.test = df[(df$`Monetary Value` <= 96.26073) & (df$`Monetary Value` >= 71.71050), 4]
+median(df.test$`Monetary Value`)
+
+             # monetary value median:
+# 96.26073    82.74472
+# 98.03783    97.24994
+# 362.4794    176.1854
+# 938.0504    517.0684
+# 2953.795    1249.796
+df$Monetary.value.score[df$`Monetary Value` >= 1249.796] = 6
+df$Monetary.value.score[df$`Monetary Value` >= 517.0684 & df$`Monetary Value` < 1249.796] = 5
+df$Monetary.value.score[df$`Monetary Value` >= 176.1854 & df$`Monetary Value` < 517.0684] = 4
+df$Monetary.value.score[df$`Monetary Value` >= 97.24994 & df$`Monetary Value` < 176.1854] = 3
+df$Monetary.value.score[df$`Monetary Value` >= 82.74472 & df$`Monetary Value` < 97.24994] = 2
+df$Monetary.value.score[df$`Monetary Value` < 82.74472] = 1
+names(df)
+df$RFM.score = 100 * df$Recency.score + 10 * df$Frequncy.score + df$Monetary.value.score
+
+df = df[, c(1, 67:70, 2:66)]
+View(df)
+
+write.csv(df, 'cleanned dataset RFM score.csv')
+```
+
+```{r} 
+#install.packages("rfm")
+#library(rfm)
+new.df = df
+```
+
+
+```{r}
+df = new.df
+
+df$Segment[(df$Recency.score %in% c(4,5,6)) & ((df$Frequncy.score) %in% c(1,2,3,4)) & (df$Monetary.value.score %in% c(1,2,3,4))] = "New Customers"
+
+df$Segment[(df$Recency.score %in% c(4,5,6)) & ((df$Frequncy.score) %in% c(4,5,6)) & (df$Monetary.value.score %in% c(4,5,6))] = "Loyal Customers"
+
+df$Segment[(df$Recency.score %in% c(5,6)) & ((df$Frequncy.score) %in% c(5,6)) & (df$Monetary.value.score %in% c(5,6))] = "Champions"
+
+
+
+# df$Segment[(df$Recency.score %in% c(5,3,4,6)) & ((df$Frequncy.score) %in% c(3,4,5,6)) # & (df$Monetary.value.score %in% c(3,4,5))] = "Potential Loyalists"
+
+df$Segment[(df$Recency.score %in% c(4,5)) & ((df$Frequncy.score) %in% c(1,2,4,3)) & (df$Monetary.value.score %in% c(1,2))] = "Promising"
+
+df$Segment[(df$Recency.score %in% c(3,4,5)) & ((df$Frequncy.score) %in% c(3,4,5)) & (df$Monetary.value.score %in% c(2,3))] = "Need Attention"
+
+
+df$Segment[(df$Recency.score %in% c(2,3)) & ((df$Frequncy.score) %in% c(1,3,2)) & (df$Monetary.value.score %in% c(1,3,2))] = "About to Sleep"
+
+
+df$Segment[(df$Recency.score %in% c(2,1)) & ((df$Frequncy.score) %in% c(2,3,4,5,6)) & (df$Monetary.value.score %in% c(2,3,4,5,6))] = "At Risk"
+
+
+# df$Segment[(df$Recency.score %in% c(1)) & ((df$Frequncy.score) %in% c(1,3,2,4)) &
+# (df$Monetary.value.score %in% c(3,4))] = "Hibernating"
+
+
+df$Segment[(df$Recency.score == 1) & (df$Frequncy.score %in% c(1,2,3,4))  & (df$Monetary.value.score %in% c(1,2,3,4))] = "Lost"
+
+df$Segment[(df$Recency.score %in% c(1)) & (df$Frequncy.score %in% c(5,6)) & (df$Monetary.value.score %in% c(5,6))] = "Can't lose"
+
+df$Segment[is.na(df$Segment)] = "Others"
+View(df)
+df = df[, c(1, 71, 2:70)]
+sum(is.na(df$Segment))
+```
+
+```{r}
+table(df$Segment)
+library(dplyr)
+df %>%
+  group_by(Segment) %>%
+  summarise(n = n())%>%
+  
+  mutate(proportion = n / sum(n)) %>%
+  arrange(desc(n))
+library(rfm)
+rfm_plot_median_recency(df$Segment)
+
+df[]
+
+debug = df[which(is.na(df$Segment)), 1:6]
+summary(debug)
+View(debug)
+nrow(df)
+sort(prop.table(table(df$Segment)), TRUE)
+write.csv(df, 'cleanned dataset segment 4.csv')
+View(df)
+yue = lm(df$`Monetary Value` ~ df$Recency + df$Frequency)
+summary(yue)
+```
